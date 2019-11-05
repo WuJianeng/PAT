@@ -1,39 +1,122 @@
-//2019/3/5 11:17
-#include<cstdio>
+﻿// 1115HeapPaths.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
+
+#include <iostream>
+#include<vector>
 using namespace std;
-const int maxn = 1050;
-int n, maxDep = 0, maxDepNum = 0, maxDepAboNum = 0;
-struct Node{
-	int data;
-	Node *left, *right;
-};
-void insert(int k, Node* &root, int dep){
-	if(root == NULL){
-		root = new Node;
-		root->data = k;
-		root->left = NULL;
-		root->right = NULL;
-		if(dep > maxDep){
-			maxDepAboNum = maxDepNum;
-			maxDep = dep;
-			maxDepNum = 1;
+
+int n;
+
+int binaryKeys[1005];
+vector<int> trace;
+const int INITIAL_HEAP = -1;
+const int MAX_HEAP = 0;
+const int MIN_HEAP = 1;
+const int NOT_HEAP = 2;
+int heapType = INITIAL_HEAP;
+
+//从根节点开始打印路径
+void printStackTrace() {
+	for (unsigned int i = 0; i < trace.size(); ++i) {
+		if (i) {
+			cout << " ";
 		}
-		else if(dep == maxDep)
-			maxDepNum++;
-		else if(dep == maxDep - 1) maxDepAboNum++;
-		return ;
+		cout << trace[i];
 	}
-	if(k <= root->data) insert(k, root->left, dep + 1);
-	else insert(k, root->right, dep + 1);
+	cout << endl;
 }
-int main(){
-	scanf("%d", &n);
-	Node* root = NULL;
-	for(int i = 0; i < n; ++i){
-		int temp;
-		scanf("%d", &temp);
-		insert(temp, root, 1);
+
+//确认堆的类型
+void assureHeapType(int nowPlace) {
+	if (heapType == NOT_HEAP || nowPlace * 2 > n) {
+		return;
 	}
-	printf("%d + %d = %d\n", maxDepNum, maxDepAboNum, maxDepNum + maxDepAboNum);
+	if (heapType == -1) {
+		if (nowPlace * 2 + 1 <= n) {
+			if (binaryKeys[nowPlace] < binaryKeys[nowPlace * 2] ||
+				binaryKeys[nowPlace] < binaryKeys[nowPlace * 2 + 1]) {
+				heapType = MIN_HEAP;
+			}
+			else if (binaryKeys[nowPlace] > binaryKeys[nowPlace * 2] ||
+				binaryKeys[nowPlace] > binaryKeys[nowPlace * 2 + 1]) {
+				heapType = MAX_HEAP;
+			}
+		}
+		else {
+			if (binaryKeys[nowPlace] < binaryKeys[nowPlace * 2]) {
+				heapType = MIN_HEAP;
+			}
+			else if (binaryKeys[nowPlace] > binaryKeys[nowPlace * 2]) {
+				heapType = MAX_HEAP;
+			}
+		}
+	}
+	if (heapType == MIN_HEAP) {
+		if (nowPlace * 2 + 1 <= n) {
+			if (binaryKeys[nowPlace] > binaryKeys[nowPlace * 2] ||
+				binaryKeys[nowPlace] > binaryKeys[nowPlace * 2 + 1]) {
+				heapType = NOT_HEAP;
+			}
+		}
+		else {
+			if (binaryKeys[nowPlace] > binaryKeys[nowPlace * 2]) {
+				heapType = NOT_HEAP;
+			}
+		}
+		
+	}
+	if (heapType == MAX_HEAP) {
+		if (nowPlace * 2 + 1 <= n) {
+			if (binaryKeys[nowPlace] < binaryKeys[nowPlace * 2] ||
+				binaryKeys[nowPlace] < binaryKeys[nowPlace * 2 + 1]) {
+				heapType = NOT_HEAP;
+			}
+		}
+		else {
+			if (binaryKeys[nowPlace] < binaryKeys[nowPlace * 2]) {
+				heapType = NOT_HEAP;
+			}
+		}
+		
+	}
+}
+
+//递归打印堆
+void print(int nowPlace) {
+	trace.push_back(binaryKeys[nowPlace]);
+	//如果没有子节点，打印路径
+	if (nowPlace * 2 > n) {
+		printStackTrace();
+	}else {
+		assureHeapType(nowPlace);
+		if (nowPlace * 2 + 1 <= n) {
+			print(nowPlace * 2 + 1);
+		}
+		print(nowPlace * 2);
+	}
+	trace.pop_back();
+}
+
+void printHeapType() {
+	if (heapType == NOT_HEAP) {
+		cout << "Not Heap" << endl;
+	}
+	else if (heapType == MIN_HEAP) {
+		cout << "Min Heap" << endl;
+	}
+	else {
+		cout << "Max Heap" << endl;
+	}
+}
+
+int main()
+{
+	cin >> n;
+	for (int i = 1; i <= n; ++i) {
+		cin >> binaryKeys[i];
+	}
+	print(1);
+	printHeapType();
 	return 0;
-} 
+}
+
